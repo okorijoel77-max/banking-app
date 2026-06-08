@@ -6,7 +6,7 @@ export default function TransferForm({
   handleTransfer
 }) {
   return (
-    <>
+    <div style={{ marginBottom: "20px" }}>
       <h2>Transfer</h2>
 
       <input
@@ -15,6 +15,11 @@ export default function TransferForm({
         onChange={(e) =>
           setReceiverAccount(e.target.value)
         }
+        style={{
+          width: "100%",
+          padding: "10px",
+          marginBottom: "10px"
+        }}
       />
 
       <input
@@ -24,11 +29,22 @@ export default function TransferForm({
         onChange={(e) =>
           setTransferAmount(e.target.value)
         }
+        style={{
+          width: "100%",
+          padding: "10px",
+          marginBottom: "10px"
+        }}
       />
 
-      <button onClick={handleTransfer}>
+      <button
+        onClick={handleTransfer}
+        style={{
+          width: "100%",
+          padding: "10px"
+        }}
+      >
         Transfer
       </button>
-    </>
+    </div>
   );
 }
