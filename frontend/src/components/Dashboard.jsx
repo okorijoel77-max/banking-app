@@ -13,8 +13,12 @@ export default function Dashboard({
   transferAmount,
   setTransferAmount,
   handleTransfer,
+  handleVerify,
+  recipient,
+  verifying,
   handleLogout
 }) {
+
   return (
     <div style={{ maxWidth: "500px", margin: "40px auto", padding: "20px" }}>
       <h1>🏦 Dashboard</h1>
@@ -32,12 +36,15 @@ export default function Dashboard({
       />
 
       <TransferForm
-        receiverAccount={receiverAccount}
-        setReceiverAccount={setReceiverAccount}
-        transferAmount={transferAmount}
-        setTransferAmount={setTransferAmount}
-        handleTransfer={handleTransfer}
-      />
+	  receiverAccount={receiverAccount}
+	  setReceiverAccount={setReceiverAccount}
+	  transferAmount={transferAmount}
+	  setTransferAmount={setTransferAmount}
+	  handleTransfer={handleTransfer}
+	  handleVerify={handleVerify}
+	  recipient={recipient}
+	  verifying={verifying}
+	/>
 
       <Transactions transactions={transactions} />
 

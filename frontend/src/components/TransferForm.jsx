@@ -1,26 +1,47 @@
+
 export default function TransferForm({
   receiverAccount,
   setReceiverAccount,
   transferAmount,
   setTransferAmount,
-  handleTransfer
+  handleTransfer,
+  handleVerify,
+  recipient,
+  verifying
 }) {
+
   return (
     <div style={{ marginBottom: "20px" }}>
       <h2>Transfer</h2>
 
-      <input
-        placeholder="Account Number"
-        value={receiverAccount}
-        onChange={(e) =>
-          setReceiverAccount(e.target.value)
-        }
+       <input
+	  placeholder="Account Number"
+	  value={receiverAccount}
+	  onChange={(e) => {
+	    const value = e.target.value;
+
+	    setReceiverAccount(value);
+
+	    if (value.length > 6) {
+	      handleVerify(value);
+	    }
+	  }}
         style={{
           width: "100%",
           padding: "10px",
           marginBottom: "10px"
         }}
       />
+
+	{verifying && (
+	  <p>Checking recipient...</p>
+	)}
+
+	{recipient && (
+	  <p style={{ color: "green" }}>
+	    Recipient: {recipient.name}
+	  </p>
+	)}
 
       <input
         type="number"

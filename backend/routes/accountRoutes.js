@@ -14,12 +14,6 @@ router.get(
 );
 
 router.get(
-  "/lookup/:accountNumber",
-  authenticate,
-  accountController.lookupAccount
-);
-
-router.get(
   "/transactions",
   authenticate,
   accountController.getTransactionHistory
@@ -32,15 +26,15 @@ router.post(
 );
 
 router.post(
-  "/withdraw",
-  authenticate,
-  accountController.withdrawMoney
-);
-
-router.post(
   "/transfer",
   authenticate,
   accountController.transferMoney
+);
+
+router.get(
+  "/verify/:accountNumber",
+  authenticate,
+  accountController.verifyAccount
 );
 
 module.exports = router;

@@ -1,9 +1,15 @@
+// IMPORT_STATES
 import { useState, useEffect } from "react";
 import api from "./services/api";
 
+
+// IMPORT_COMPONENTS
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Dashboard from "./components/Dashboard";
+
+
+// EXPORT_APP_Functions
 
 export default function App() {
   const [page, setPage] = useState("login");
@@ -20,13 +26,21 @@ export default function App() {
   const [amount, setAmount] = useState("");
   const [receiverAccount, setReceiverAccount] = useState("");
   const [transferAmount, setTransferAmount] = useState("");
+  
+  const [recipient, setRecipient] = useState(null);
+  const [verifying, setVerifying] = useState(false);
+
+
+// EFFECTS
 
   useEffect(() => {
     checkLogin();
     setLoading(false);
   }, []);
 
-  // AUTH CHECK
+
+// AUTH_CHECK
+
   const checkLogin = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -36,19 +50,18 @@ export default function App() {
         headers: { Authorization: "Bearer " + token }
       });
 
-      const txRes = await api.get("/account/transactions", {
-        headers: { Authorization: "Bearer " + token }
-      });
-
-      setAccount(accountRes.data);
-      setTransactions(txRes.data);
+      setAccount(accountRes.data.account);
+      setTransactions(accountRes.data.transactions);
       setLoggedIn(true);
-    } catch (err) {
+    } 
+      catch (err) {
       localStorage.removeItem("token");
     }
   };
 
-  // LOGIN
+
+// LOGIN
+
   const handleLogin = async () => {
     try {
       const res = await api.post("/auth/login", { email, password });
@@ -64,7 +77,9 @@ export default function App() {
     }
   };
 
-  // REGISTER
+
+ // REGISTER
+
   const handleRegister = async () => {
     try {
       const res = await api.post("/auth/register", {
@@ -79,7 +94,9 @@ export default function App() {
     }
   };
 
-  // DEPOSIT
+
+// DEPOSIT
+
   const handleDeposit = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -98,57 +115,112 @@ export default function App() {
     }
   };
 
-  // TRANSFER
-  const handleTransfer = async () => {
-    try {
-      const token = localStorage.getItem("token");
 
-      await api.post(
-        "/account/transfer",
-        {
-          accountNumber: receiverAccount,
-          amount: Number(transferAmount)
-        },
-        { headers: { Authorization: "Bearer " + token } }
-      );
 
-      await checkLogin();
-      setReceiverAccount("");
-      setTransferAmount("");
+// TRANSFER
 
-      alert("Transfer successful");
-    } catch {
-      alert("Transfer failed");
+const handleTransfer = async () => {
+  try {
+    if (!recipient) {
+      alert("Verify recipient first");
+      return;
     }
-  };
 
-  // LOADING
+    const token = localStorage.getItem("token");
+
+    await api.post(
+     "/account/transfer",
+    {
+      accountNumber: receiverAccount,
+      amount: Number(transferAmount)
+    },
+      {
+        headers: {
+          Authorization: "Bearer " + token
+        }
+      }
+    );
+
+    await checkLogin();
+
+    setReceiverAccount("");
+    setTransferAmount("");
+    setRecipient(null);
+
+    alert("Transfer successful");
+  } catch (err) {
+     console.log(err);
+     alert(
+     err?.response?.data?.error ||
+     "Transfer failed"
+   );
+ }
+};
+
+
+
+// AUTO_VERIFY
+
+  const handleVerify = async (accountNumber) => {
+  try {
+    setVerifying(true);
+
+    const token = localStorage.getItem("token");
+
+    const res = await api.get(
+      `/account/verify/${accountNumber}`,
+      {
+        headers: {
+          Authorization: "Bearer " + token
+        }
+      }
+    );
+
+    setRecipient(res.data);
+  } catch (err) {
+    setRecipient(null);
+  } finally {
+    setVerifying(false);
+  }
+};
+
+
+// LOADING
+
   if (loading) return <h2>Loading...</h2>;
 
-  // DASHBOARD
+
+// DASHBOARD
+
   if (loggedIn && account) {
     return (
-      <Dashboard
-        account={account}
-        transactions={transactions}
-        amount={amount}
-        setAmount={setAmount}
-        handleDeposit={handleDeposit}
-        receiverAccount={receiverAccount}
-        setReceiverAccount={setReceiverAccount}
-        transferAmount={transferAmount}
-        setTransferAmount={setTransferAmount}
-        handleTransfer={handleTransfer}
-        handleLogout={() => {
-          localStorage.removeItem("token");
-          setLoggedIn(false);
-          setAccount(null);
-        }}
-      />
+       <Dashboard
+	  account={account}
+	  transactions={transactions}
+	  amount={amount}
+	  setAmount={setAmount}
+	  handleDeposit={handleDeposit}
+	  receiverAccount={receiverAccount}
+	  setReceiverAccount={setReceiverAccount}
+	  transferAmount={transferAmount}
+	  setTransferAmount={setTransferAmount}
+	  handleTransfer={handleTransfer}
+	  handleVerify={handleVerify}
+	  recipient={recipient}
+	  verifying={verifying}
+	  handleLogout={() => {
+	    localStorage.removeItem("token");
+	    setLoggedIn(false);
+	    setAccount(null);
+	  }}
+	/>
     );
   }
 
-  // LOGIN / REGISTER
+
+
+// LOGIN / REGISTER
+
   return (
     <div style={{ maxWidth: "500px", margin: "40px auto", fontFamily: "Arial" }}>
       <h1 style={{ textAlign: "center" }}>🏦 Joel Bank</h1>

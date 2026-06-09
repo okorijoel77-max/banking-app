@@ -1,12 +1,13 @@
-
 const fs = require("fs");
 const path = require("path");
-
-const DB_FILE = path.join(__dirname, "../bank.db");
 const initSqlJs = require("sql.js");
 
-let db;
+const DB_FILE = path.join(__dirname, "../bank.db");
+
 let SQL;
+let db;
+
+/* ---------------- INIT ---------------- */
 
 async function initDB() {
   SQL = await initSqlJs();
@@ -17,8 +18,8 @@ async function initDB() {
   } else {
     db = new SQL.Database();
 
-    db.run(`
-      CREATE TABLE IF NOT EXISTS users (
+    db.exec(`
+      CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
         email TEXT UNIQUE,
@@ -26,8 +27,8 @@ async function initDB() {
       );
     `);
 
-    db.run(`
-      CREATE TABLE IF NOT EXISTS accounts (
+    db.exec(`
+      CREATE TABLE accounts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
         account_number TEXT UNIQUE,
@@ -35,8 +36,8 @@ async function initDB() {
       );
     `);
 
-    db.run(`
-      CREATE TABLE IF NOT EXISTS transactions (
+    db.exec(`
+      CREATE TABLE transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         account_id INTEGER,
         type TEXT,
@@ -48,39 +49,45 @@ async function initDB() {
     saveDB();
   }
 
-  console.log("Bank database ready");
+  console.log("Bank DB ready");
 }
+
+/* ---------------- SAVE ---------------- */
 
 function saveDB() {
   const data = db.export();
-  const buffer = Buffer.from(data);
-  fs.writeFileSync(DB_FILE, buffer);
+  fs.writeFileSync(DB_FILE, Buffer.from(data));
 }
 
+/* ---------------- HELPERS ---------------- */
 
-//CREATE_USER
+function exec(sql) {
+  return db.exec(sql);
+}
+
+/* ---------------- USER ---------------- */
+
 function createUser(name, email, passwordHash) {
   try {
     const accountNumber = "BA" + Date.now();
 
-    db.run(
-      `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`,
-      [name, email, passwordHash]
-    );
+    exec(`
+      INSERT INTO users (name, email, password)
+      VALUES ('${name}', '${email}', '${passwordHash}');
+    `);
 
-    const userResult = db.exec(
-      `SELECT id FROM users WHERE email = '${email}'`
-    );
+    const userRes = exec(`
+      SELECT id FROM users WHERE email = '${email}'
+    `);
 
-    const userId = userResult[0].values[0][0];
+    const userId = userRes[0].values[0][0];
 
-   db.run(
-    `INSERT INTO accounts (user_id, account_number, balance)
-    VALUES (?, ?, ?)`,
-    [userId, accountNumber, 0]
-  );
+    exec(`
+      INSERT INTO accounts (user_id, account_number, balance)
+      VALUES (${userId}, '${accountNumber}', 0)
+    `);
 
-  saveDB();
+    saveDB();
 
     return { success: true, accountNumber };
   } catch (err) {
@@ -88,70 +95,252 @@ function createUser(name, email, passwordHash) {
   }
 }
 
-
-//FIND_USER_BY_EMAIL
 function findUserByEmail(email) {
-  const result = db.exec(
-    `SELECT * FROM users WHERE email = '${email}'`
-  );
+  const result = exec(`
+    SELECT * FROM users WHERE email = '${email}'
+  `);
 
-  if (result.length === 0) {
-    return null;
-  }
-
-  const columns = result[0].columns;
-  const values = result[0].values[0];
+  if (!result.length || !result[0].values.length) return null;
 
   const user = {};
-
-  columns.forEach((col, index) => {
-    user[col] = values[index];
+  result[0].columns.forEach((c, i) => {
+    user[c] = result[0].values[0][i];
   });
 
   return user;
 }
 
+/* ---------------- ACCOUNT ---------------- */
 
-//GET_ACCOUNT_BY_EMAIL
 function getAccountByEmail(email) {
-  const result = db.exec(`
+  const result = exec(`
     SELECT
       users.name,
       users.email,
       accounts.account_number,
       accounts.balance
     FROM users
-    JOIN accounts
-      ON users.id = accounts.user_id
+    JOIN accounts ON users.id = accounts.user_id
     WHERE users.email = '${email}'
   `);
 
-  if (result.length === 0) {
-    return null;
-  }
+  if (!result.length || !result[0].values.length) return null;
 
-  const columns = result[0].columns;
-  const values = result[0].values[0];
-
-  let account = {};
-
-  columns.forEach((col, index) => {
-    account[col] = values[index];
+  const account = {};
+  result[0].columns.forEach((c, i) => {
+    account[c] = result[0].values[0][i];
   });
 
   return account;
 }
 
+function getAccountByUserId(userId) {
+  const result = exec(`
+    SELECT
+      accounts.id,
+      accounts.user_id,
+      accounts.account_number,
+      accounts.balance,
+      users.name
+    FROM accounts
+    JOIN users ON users.id = accounts.user_id
+    WHERE accounts.user_id = ${userId}
+  `);
 
-//DEPOSIT_
+  if (!result.length || !result[0].values.length) return null;
+
+  const account = {};
+  result[0].columns.forEach((c, i) => {
+    account[c] = result[0].values[0][i];
+  });
+
+  return account;
+}
+
+function getAccountByAccountId(id) {
+  const result = exec(`
+    SELECT
+      accounts.id,
+      accounts.user_id,
+      accounts.account_number,
+      accounts.balance,
+      users.name
+    FROM accounts
+    JOIN users ON users.id = accounts.user_id
+    WHERE accounts.id = ${id}
+  `);
+
+  if (!result.length || !result[0].values.length) return null;
+
+  const account = {};
+  result[0].columns.forEach((c, i) => {
+    account[c] = result[0].values[0][i];
+  });
+
+  return account;
+}
+
+function findAccountByNumber(accountNumber) {
+  const result = exec(`
+    SELECT
+      accounts.id,
+      users.name,
+      accounts.account_number
+    FROM accounts
+    JOIN users ON users.id = accounts.user_id
+    WHERE accounts.account_number = '${accountNumber}'
+  `);
+
+  if (!result.length || !result[0].values.length) return null;
+
+  const account = {};
+  result[0].columns.forEach((c, i) => {
+    account[c] = result[0].values[0][i];
+  });
+
+  return account;
+}
+
+/* ---------------- MONEY OPS ---------------- */
+
 function deposit(accountId, amount) {
-  db.run(
-    `UPDATE accounts
-     SET balance = balance + ?
-     WHERE id = ?`,
-    [amount, accountId]
-  );
+  exec(`
+    UPDATE accounts
+    SET balance = balance + ${amount}
+    WHERE id = ${accountId}
+  `);
 
+  exec(`
+    INSERT INTO transactions (account_id, type, amount, created_at)
+    VALUES (${accountId}, 'deposit', ${amount}, datetime('now'))
+  `);
+
+  saveDB();
+}
+
+function withdraw(accountId, amount) {
+  const res = exec(`
+    SELECT balance FROM accounts WHERE id = ${accountId}
+  `);
+
+  if (!res.length || !res[0].values.length) {
+    throw new Error("Account not found");
+  }
+
+  const balance = res[0].values[0][0];
+
+  if (balance < amount) {
+    throw new Error("Insufficient balance");
+  }
+
+  exec(`
+    UPDATE accounts
+    SET balance = balance - ${amount}
+    WHERE id = ${accountId}
+  `);
+
+  exec(`
+    INSERT INTO transactions (account_id, type, amount, created_at)
+    VALUES (${accountId}, 'withdrawal', ${amount}, datetime('now'))
+  `);
+
+  saveDB();
+}
+
+function transfer(fromId, toAccountNumber, amount) {
+  amount = Number(amount);
+
+  if (!amount || amount <= 0) {
+    throw new Error("Invalid amount");
+  }
+
+  const senderRes = exec(`
+    SELECT account_number, balance
+    FROM accounts
+    WHERE id = ${fromId}
+  `);
+
+  if (!senderRes.length) throw new Error("Sender not found");
+
+  const sender = senderRes[0].values[0];
+
+  const senderAccNumber = sender[0];
+  const senderBalance = sender[1];
+
+  if (senderBalance < amount) {
+    throw new Error("Insufficient balance");
+  }
+
+  if (senderAccNumber === toAccountNumber) {
+    throw new Error("Cannot transfer to self");
+  }
+
+  const receiverRes = exec(`
+    SELECT id FROM accounts
+    WHERE account_number = '${toAccountNumber}'
+  `);
+
+  if (!receiverRes.length || !receiverRes[0].values.length) {
+    throw new Error("Receiver not found");
+  }
+
+  const toId = receiverRes[0].values[0][0];
+
+  exec(`
+    UPDATE accounts
+    SET balance = balance - ${amount}
+    WHERE id = ${fromId}
+  `);
+
+  exec(`
+    UPDATE accounts
+    SET balance = balance + ${amount}
+    WHERE id = ${toId}
+  `);
+
+  exec(`
+    INSERT INTO transactions (account_id, type, amount, created_at)
+    VALUES (${fromId}, 'transfer_out', ${amount}, datetime('now'))
+  `);
+
+  exec(`
+    INSERT INTO transactions (account_id, type, amount, created_at)
+    VALUES (${toId}, 'transfer_in', ${amount}, datetime('now'))
+  `);
+
+//temporary
+console.log("SENDER RES:", senderRes);
+console.log("RECEIVER RES:", receiverRes);
+
+  saveDB();
+
+  return { success: true };
+}
+
+/* ---------------- TRANSACTIONS ---------------- */
+
+function getTransactions(accountId) {
+  const result = exec(`
+    SELECT *
+    FROM transactions
+    WHERE account_id = ${accountId}
+    ORDER BY id DESC
+  `);
+
+  if (!result.length || !result[0].values.length) return [];
+
+  return result[0].values.map(row => {
+    const obj = {};
+    result[0].columns.forEach((c, i) => {
+      obj[c] = row[i];
+    });
+    return obj;
+  });
+}
+
+
+//Transaction_Loggin
+function logDeposit(accountId, amount) {
   db.run(
     `INSERT INTO transactions
      (account_id, type, amount, created_at)
@@ -167,219 +356,42 @@ function deposit(accountId, amount) {
   saveDB();
 }
 
-
-//WITHDRAW_
-function withdraw(accountId, amount) {
-  const result = db.exec(`
-    SELECT balance FROM accounts WHERE id = ${accountId}
-  `);
-
-  if (!result.length) {
-    throw new Error("Account not found");
-  }
-
-  const currentBalance = result[0].values[0][0];
-
-  if (currentBalance < amount) {
-    throw new Error("Insufficient balance");
-  }
+function logTransfer(senderId, receiverId, amount) {
+  const now = new Date().toISOString();
 
   db.run(
-    `UPDATE accounts
-     SET balance = balance - ?
-     WHERE id = ?`,
-    [amount, accountId]
+    `INSERT INTO transactions
+     (account_id, type, amount, created_at)
+     VALUES (?, ?, ?, ?)`,
+    [senderId, "transfer_out", amount, now]
   );
 
   db.run(
     `INSERT INTO transactions
      (account_id, type, amount, created_at)
      VALUES (?, ?, ?, ?)`,
-    [
-      accountId,
-      "withdrawal",
-      amount,
-      new Date().toISOString()
-    ]
+    [receiverId, "transfer_in", amount, now]
   );
 
   saveDB();
 }
 
 
-//TRANSFER_
-function transfer(fromAccountId, toAccountNumber, amount) {
-  amount = Number(amount);
+/* ---------------- EXPORTS ---------------- */
 
-  if (!Number.isFinite(amount) || amount <= 0) {
-    throw new Error("Invalid amount");
-  }
-
-  // 1. Get sender account
-  const senderResult = db.exec(
-    `SELECT account_number, balance FROM accounts WHERE id = ?`,
-    [fromAccountId]
-  );
-
-  if (!senderResult.length) {
-    throw new Error("Sender account not found");
-  }
-
-  const sender = {
-    account_number: senderResult[0].values[0][0],
-    balance: senderResult[0].values[0][1]
-  };
-
-  // 2. Prevent self-transfer
-  if (sender.account_number === toAccountNumber) {
-    throw new Error("Cannot transfer to same account");
-  }
-
-  // 3. Check balance
-  if (sender.balance < amount) {
-    throw new Error("Insufficient balance");
-  }
-
-  // 4. Get receiver
-  const receiverResult = db.exec(
-    `SELECT id FROM accounts WHERE account_number = ?`,
-    [toAccountNumber]
-  );
-
-  if (!receiverResult.length) {
-    throw new Error("Receiver not found");
-  }
-
-  const toAccountId = receiverResult[0].values[0][0];
-
-  const now = new Date().toISOString();
-
-  // 5. EXECUTE SAFE TRANSACTION (logical atomicity)
-  db.run(
-    `UPDATE accounts SET balance = balance - ? WHERE id = ?`,
-    [amount, fromAccountId]
-  );
-
-  db.run(
-    `UPDATE accounts SET balance = balance + ? WHERE id = ?`,
-    [amount, toAccountId]
-  );
-
-  // 6. Audit logs (critical in fintech)
-  db.run(
-    `INSERT INTO transactions (account_id, type, amount, created_at)
-     VALUES (?, ?, ?, ?)`,
-    [fromAccountId, "transfer_out", amount, now]
-  );
-
-  db.run(
-    `INSERT INTO transactions (account_id, type, amount, created_at)
-     VALUES (?, ?, ?, ?)`,
-    [toAccountId, "transfer_in", amount, now]
-  );
-
-  // 7. Persist
-  saveDB();
-
-  return {
-    success: true,
-    amount,
-    toAccountNumber
-  };
-}
-
-
-//GET_ACC_BY_USER_ID
-function getAccountByUserId(userId) {
-  const result = db.exec(`
-    SELECT * FROM accounts
-    WHERE user_id = ${userId}
-  `);
-
-  if (result.length === 0) {
-    return null;
-  }
-
-  const columns = result[0].columns;
-  const values = result[0].values[0];
-
-  let account = {};
-
-  columns.forEach((col, index) => {
-    account[col] = values[index];
-  });
-
-  return account;
-}
-
-
-//GET_TRANSACTIONS
-function getTransactions(accountId) {
-  const result = db.exec(`
-    SELECT *
-    FROM transactions
-    WHERE account_id = ${accountId}
-    ORDER BY id DESC
-  `);
-
-  if (result.length === 0) {
-    return [];
-  }
-
-  const columns = result[0].columns;
-  const values = result[0].values;
-
-  return values.map(row => {
-    const transaction = {};
-
-    columns.forEach((col, index) => {
-      transaction[col] = row[index];
-    });
-
-    return transaction;
-  });
-}
-
-
-//FIND_ACC_BY_ACC-NUM
-function findAccountByNumber(accountNumber) {
-  const result = db.exec(`
-    SELECT
-      users.name,
-      accounts.account_number
-    FROM accounts
-    JOIN users
-      ON users.id = accounts.user_id
-    WHERE accounts.account_number = '${accountNumber}'
-  `);
-
-  if (result.length === 0) {
-    return null;
-  }
-
-  const columns = result[0].columns;
-  const values = result[0].values[0];
-
-  let account = {};
-
-  columns.forEach((col, index) => {
-    account[col] = values[index];
-  });
-
-  return account;
-}
-
-
-//EXPORTS_
 module.exports = {
   initDB,
   createUser,
   findUserByEmail,
   getAccountByEmail,
+  getAccountByUserId,
+  getAccountByAccountId,
+  findAccountByNumber,
   deposit,
   withdraw,
   transfer,
-  getAccountByUserId,
   getTransactions,
-  findAccountByNumber
+  exec,
+  logDeposit,
+  logTransfer
 };
