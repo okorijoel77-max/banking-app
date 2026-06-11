@@ -8,10 +8,10 @@ export default function Register({
   handleRegister
 }) {
   return (
-    <div>
+    <div className="card">
       <h2>Register</h2>
 
-      <input
+      <input className="input"
         placeholder="Name"
         value={name}
         onChange={(e) =>
@@ -19,7 +19,7 @@ export default function Register({
         }
       />
 
-      <input
+      <input className="input"
         placeholder="Email"
         value={email}
         onChange={(e) =>
@@ -27,16 +27,16 @@ export default function Register({
         }
       />
 
-      <input
+      <input className="input"
         type="password"
-        placeholder="Password"
+        placeholder="Set password"
         value={password}
         onChange={(e) =>
           setPassword(e.target.value)
         }
       />
 
-      <button onClick={handleRegister}>
+      <button className="button" onClick={handleRegister}>
         Create Account
       </button>
     </div>

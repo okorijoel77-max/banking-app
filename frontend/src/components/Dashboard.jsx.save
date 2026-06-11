@@ -21,23 +21,17 @@ export default function Dashboard({
 
   return (
     <div className="container">
-<div
-  className="dashboard"
->
-  <img
-    src="/bank.png"
-    alt="bankImg"
-    style={{ borderRadius: "50%", width: "100px", height: "100px" }}
-  />
-  <h1>WELCOME!</h1>
-</div>
+      <div className="dashboard">
+          <img src="image">
+          <h1>🏦 Dashboard</h1>
+      </div>
+
       <div className="card section">
         <p><strong>Name:</strong> {account.name}</p>
         <p><strong>Account Number:</strong> {account.account_number}</p>
         <p className="balance">₦{account.balance}</p>
       </div>
 
-   <div className="card section">
       <DepositForm
         amount={amount}
         setAmount={setAmount}
@@ -54,12 +48,18 @@ export default function Dashboard({
 	  recipient={recipient}
 	  verifying={verifying}
 	/>
-   </div>
 
       <Transactions transactions={transactions} />
 
-      <button className="logout"
+      <button
         onClick={handleLogout}
+        style={{
+          marginTop: "20px",
+          background: "black",
+          color: "white",
+          padding: "10px",
+          width: "100%"
+        }}
       >
         Logout
       </button>

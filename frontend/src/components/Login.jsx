@@ -6,10 +6,10 @@ export default function Login({
   handleLogin
 }) {
   return (
-    <div>
+    <div className="card">
       <h2>Login</h2>
 
-      <input
+      <input className="input"
         placeholder="Email"
         value={email}
         onChange={(e) =>
@@ -17,7 +17,7 @@ export default function Login({
         }
       />
 
-      <input
+      <input className="input"
         type="password"
         placeholder="Password"
         value={password}
@@ -26,7 +26,7 @@ export default function Login({
         }
       />
 
-      <button onClick={handleLogin}>
+      <button className="button" onClick={handleLogin}>
         Login
       </button>
     </div>

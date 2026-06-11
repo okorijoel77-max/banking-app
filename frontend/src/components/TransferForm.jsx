@@ -14,7 +14,7 @@ export default function TransferForm({
     <div style={{ marginBottom: "20px" }}>
       <h2>Transfer</h2>
 
-       <input
+       <input className="input"
 	  placeholder="Account Number"
 	  value={receiverAccount}
 	  onChange={(e) => {
@@ -26,11 +26,6 @@ export default function TransferForm({
 	      handleVerify(value);
 	    }
 	  }}
-        style={{
-          width: "100%",
-          padding: "10px",
-          marginBottom: "10px"
-        }}
       />
 
 	{verifying && (
@@ -43,26 +38,17 @@ export default function TransferForm({
 	  </p>
 	)}
 
-      <input
+      <input className="input"
         type="number"
         placeholder="Amount"
         value={transferAmount}
         onChange={(e) =>
           setTransferAmount(e.target.value)
         }
-        style={{
-          width: "100%",
-          padding: "10px",
-          marginBottom: "10px"
-        }}
       />
 
-      <button
+      <button className="button"
         onClick={handleTransfer}
-        style={{
-          width: "100%",
-          padding: "10px"
-        }}
       >
         Transfer
       </button>

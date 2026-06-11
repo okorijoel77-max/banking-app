@@ -1,7 +1,9 @@
 // IMPORT_STATES
 import { useState, useEffect } from "react";
 import api from "./services/api";
-
+import "./App.css";
+import { FaUser, FaHeadset, FaMoneyBill, FaUniversity }
+ from "react-icons/fa";
 
 // IMPORT_COMPONENTS
 import Login from "./components/Login";
@@ -89,7 +91,12 @@ export default function App() {
       });
 
       alert("Account Created: " + res.data.accountNumber);
-    } catch {
+    
+    setName("");
+    setEmail("");
+    setPassword("");
+  }
+   catch {
       alert("Registration failed");
     }
   };
@@ -111,7 +118,7 @@ export default function App() {
       setAmount("");
       alert("Deposit successful");
     } catch {
-      alert("Deposit failed");
+      alert("Invalid amount");
     }
   };
 
@@ -219,16 +226,21 @@ const handleTransfer = async () => {
 
 
 
-// LOGIN / REGISTER
+// HOME_PAGE
 
   return (
-    <div style={{ maxWidth: "500px", margin: "40px auto", fontFamily: "Arial" }}>
-      <h1 style={{ textAlign: "center" }}>🏦 Joel Bank</h1>
-
-      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-        <button onClick={() => setPage("login")}>Login</button>
-        <button onClick={() => setPage("register")}>Register</button>
-      </div>
+<>
+    <div className="container">
+     <div className="homeHero">
+       <div className="fa"> 
+         <FaHeadset style={{fontSize:"20px"}} />
+       </div>
+      <img src="/bank.png" alt="bankImg" className="homeImage"/>
+     </div> 
+        <div className="logReg">
+        <button className="home-btn" onClick={() => setPage("login")}>Login</button>
+        <button className="home-btn" onClick={() => setPage("register")}>Register</button>
+        </div>
 
       {page === "login" ? (
         <Login
@@ -250,5 +262,9 @@ const handleTransfer = async () => {
         />
       )}
     </div>
+    <footer className="footer">
+        <p>powered by CBN copyrights® 2026</p>
+    </footer>
+</>
   );
 }
