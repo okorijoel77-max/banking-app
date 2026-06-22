@@ -1,6 +1,9 @@
 import DepositForm from "./DepositForm";
 import TransferForm from "./TransferForm";
 import Transactions from "./Transactions";
+import TransactionsPage from "./TransactionsPage";
+import { FaUser, FaHeadset, FaUniversity, FaPaperPlane }
+ from "react-icons/fa";
 
 export default function Dashboard({
   account,
@@ -16,28 +19,31 @@ export default function Dashboard({
   handleVerify,
   recipient,
   verifying,
-  handleLogout
+  handleLogout,
+  setScreen
 }) {
 
-  return (
-    <div className="container">
-<div
-  className="dashboard"
->
-  <img
-    src="/bank.png"
-    alt="bankImg"
-    style={{ borderRadius: "50%", width: "100px", height: "100px" }}
-  />
-  <h1>WELCOME!</h1>
-</div>
+return (
+  <div className="container">
+      <div className="dashboard">
+	  <img
+	    src="/bank.png"
+	    alt="bankImg"
+	    style={{ borderRadius: "50%", width: "100px",
+	             height: "100px", margin:"20px"}}
+	   />
+      </div>
+   
       <div className="card section">
+        <FaUser className="faUser"/>
         <p><strong>Name:</strong> {account.name}</p>
-        <p><strong>Account Number:</strong> {account.account_number}</p>
-        <p className="balance">₦{account.balance}</p>
+        <p><strong>Account Number:</strong>
+            {account.account_number}</p>
+        <p className="balance">₦{Number(account.balance)
+                      .toLocaleString()} </p>
       </div>
 
-   <div className="card section">
+    <div>
       <DepositForm
         amount={amount}
         setAmount={setAmount}
@@ -54,15 +60,24 @@ export default function Dashboard({
 	  recipient={recipient}
 	  verifying={verifying}
 	/>
-   </div>
-
-      <Transactions transactions={transactions} />
-
+     </div>
+    <p className="service-p">Services</p>
+    <div className="services-grid">
+       <div className="service-card"
+         onClick={() => setScreen("transactions")}>💴<br /> Transactions</div>
+       <div className="service-card">🔄<br /> Transfer</div>
+       <div className="service-card">📞<br /> Airtime</div>
+       <div className="service-card">📶<br /> Data</div>
+       <div className="service-card">⚽<br /> Betting</div>
+       <div className="service-card">💰<br />Savings</div>
+       <div className="service-card">📚<br /> Education</div>
+       <div className="service-card">📄<br /> Statement</div>
+    </div>
       <button className="logout"
-        onClick={handleLogout}
-      >
+        onClick={handleLogout}>
         Logout
       </button>
     </div>
   );
 }
+

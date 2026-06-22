@@ -2,20 +2,22 @@
 import { useState, useEffect } from "react";
 import api from "./services/api";
 import "./App.css";
-import { FaUser, FaHeadset, FaMoneyBill, FaUniversity }
+import { FaUser, FaHeadset, FaPaperPlane, FaUniversity }
  from "react-icons/fa";
 
 // IMPORT_COMPONENTS
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Dashboard from "./components/Dashboard";
-
+import TransactionsPage
+   from "./components/TransactionsPage";
 
 // EXPORT_APP_Functions
 
 export default function App() {
   const [page, setPage] = useState("login");
   const [loggedIn, setLoggedIn] = useState(false);
+  const [screen, setScreen] = useState("dashboard");
   const [loading, setLoading] = useState(true);
 
   const [name, setName] = useState("");
@@ -26,7 +28,7 @@ export default function App() {
   const [transactions, setTransactions] = useState([]);
 
   const [amount, setAmount] = useState("");
-  const [receiverAccount, setReceiverAccount] = useState("");
+ const [receiverAccount, setReceiverAccount] = useState("");
   const [transferAmount, setTransferAmount] = useState("");
   
   const [recipient, setRecipient] = useState(null);
@@ -74,8 +76,12 @@ export default function App() {
 
       setLoggedIn(true);
       alert("Login successful");
-    } catch {
-      alert("Login failed");
+    
+     setEmail("");
+     setPassword("");
+   
+    }catch {
+      alert("Incorrect");
     }
   };
 
@@ -198,10 +204,23 @@ const handleTransfer = async () => {
 
 
 // DASHBOARD
-
+	  if (
+	  loggedIn &&
+	  account &&
+	  screen === "transactions"
+	) {
+	  return (
+	    <TransactionsPage
+	      transactions={transactions}
+	      goBack={() =>
+	        setScreen("dashboard")
+	      }
+	    />
+	  );
+	}
   if (loggedIn && account) {
     return (
-       <Dashboard
+	<Dashboard
 	  account={account}
 	  transactions={transactions}
 	  amount={amount}
@@ -215,6 +234,7 @@ const handleTransfer = async () => {
 	  handleVerify={handleVerify}
 	  recipient={recipient}
 	  verifying={verifying}
+	  setScreen={setScreen}
 	  handleLogout={() => {
 	    localStorage.removeItem("token");
 	    setLoggedIn(false);

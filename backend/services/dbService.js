@@ -69,7 +69,7 @@ function exec(sql) {
 
 function createUser(name, email, passwordHash) {
   try {
-    const accountNumber = "BA" + Date.now();
+    const accountNumber = "JB" + Date.now();
 
     exec(`
       INSERT INTO users (name, email, password)
@@ -90,7 +90,7 @@ function createUser(name, email, passwordHash) {
     saveDB();
 
     return { success: true, accountNumber };
-  } catch (err) {
+  }catch (err) {
     return { success: false, error: err.message };
   }
 }
@@ -204,6 +204,11 @@ function findAccountByNumber(accountNumber) {
 /* ---------------- MONEY OPS ---------------- */
 
 function deposit(accountId, amount) {
+  if (!amount || Number(amount) <= 0) {
+   alert("Enter a valid amount");
+   return;
+ }
+
   exec(`
     UPDATE accounts
     SET balance = balance + ${amount}
@@ -233,6 +238,11 @@ function withdraw(accountId, amount) {
     throw new Error("Insufficient balance");
   }
 
+  if (!amount || Number(amount) <= 0) {
+    alert("Enter a valid amount");
+    return;
+  }
+
   exec(`
     UPDATE accounts
     SET balance = balance - ${amount}
@@ -250,9 +260,10 @@ function withdraw(accountId, amount) {
 function transfer(fromId, toAccountNumber, amount) {
   amount = Number(amount);
 
-  if (!amount || amount <= 0) {
-    throw new Error("Invalid amount");
-  }
+  if (!amount || Number(amount) <= 0) {
+  alert("Enter a valid amount");
+  return;
+}
 
   const senderRes = exec(`
     SELECT account_number, balance
@@ -308,10 +319,6 @@ function transfer(fromId, toAccountNumber, amount) {
     VALUES (${toId}, 'transfer_in', ${amount}, datetime('now'))
   `);
 
-//temporary
-console.log("SENDER RES:", senderRes);
-console.log("RECEIVER RES:", receiverRes);
-
   saveDB();
 
   return { success: true };
@@ -339,7 +346,7 @@ function getTransactions(accountId) {
 }
 
 
-//Transaction_Loggin
+//Transaction_Log
 function logDeposit(accountId, amount) {
   db.run(
     `INSERT INTO transactions

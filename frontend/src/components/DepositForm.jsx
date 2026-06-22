@@ -1,12 +1,15 @@
+import { FaPaperPlane } from "react-icons/fa";
+
 export default function DepositForm({
   amount,
   setAmount,
   handleDeposit
 }) {
   return (
-      <div style={{
-	  marginBottom: "20px"
-	}}>
+      <div className="card"
+        style={{ width: "80%",
+               margin: "20px auto"
+            }}>
       <h2>Deposit</h2>
 
       <input className="input"
@@ -21,7 +24,7 @@ export default function DepositForm({
       <button className="button"
         onClick={handleDeposit}
       >
-        Deposit
+        <FaPaperPlane style={{color:"red"}}/>
       </button>
     </div>
   );

@@ -1,3 +1,4 @@
+import { FaPaperPlane } from "react-icons/fa";
 
 export default function TransferForm({
   receiverAccount,
@@ -11,7 +12,10 @@ export default function TransferForm({
 }) {
 
   return (
-    <div style={{ marginBottom: "20px" }}>
+    <div className="card" 
+      style={{ width: "80%",
+               margin: "20px auto"
+            }}>
       <h2>Transfer</h2>
 
        <input className="input"
@@ -50,7 +54,7 @@ export default function TransferForm({
       <button className="button"
         onClick={handleTransfer}
       >
-        Transfer
+        <FaPaperPlane style={{color:"red"}}/>
       </button>
     </div>
   );

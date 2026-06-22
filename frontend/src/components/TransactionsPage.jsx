@@ -1,7 +1,7 @@
-export default function Transactions({
-  transactions
+export default function TransactionsPage({
+  transactions,
+  goBack
 }) {
-
   const labels = {
     deposit: "💰 Deposit",
     transfer_in: "⬇ Money Received",
@@ -22,18 +22,10 @@ export default function Transactions({
             tx.type === "transfer_in";
 
           return (
-            <div
+            <div className="transactions-card"
               key={tx.id}
-              style={{
-                border: "1px solid #ddd",
-                padding: "10px",
-                marginBottom: "10px",
-                borderRadius: "8px"
-              }}
             >
-              <h3>
-                {labels[tx.type] || tx.type}
-              </h3>
+              <h3>{labels[tx.type] || tx.type}</h3>
 
               <p
                 style={{
@@ -51,6 +43,10 @@ export default function Transactions({
           );
         })
       )}
+
+      <button className="logout" onClick={goBack}>
+        Back
+      </button>
     </div>
   );
 }

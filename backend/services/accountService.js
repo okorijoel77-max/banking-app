@@ -5,9 +5,13 @@ const db = require("../services/dbService");
 async function transfer(senderUserId, { accountNumber, amount }) {
   amount = Number(amount);
 
-  if (!accountNumber || !amount || amount <= 0) {
+  if (!accountNumber) {
     throw new Error("Invalid transfer request");
   }
+
+  if (!amount || Number(amount) <= 0) {
+    throw new Error("Enter a valid amount");
+}
 
   const sender = await accountRepo.getByUserId(senderUserId);
   const receiver = await accountRepo.getByAccountNumber(accountNumber);
